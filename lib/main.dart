@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 4,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
           shadowColor: Colors.black.withOpacity(0.1),
