@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/habit_service.dart';
 import '../services/ai_habit_service.dart';
+import 'debug_screen.dart';
 
 class SuggestionsScreen extends StatefulWidget {
   final VoidCallback onHabitAdded;
@@ -131,11 +132,19 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
       _chatController.clear();
     });
 
+    // Show typing indicator
+    setState(() {
+      _chatMessages.add({'sender': 'ai', 'message': '🤖 Thinking...'});
+    });
+
     // Get AI response
     final context = 'User has ${_existingHabits.length} existing habits. Goal: $_goal. Lifestyle: $_lifestyle.';
     final response = await AIHabitService.chatWithAI(message, context);
     
     setState(() {
+      // Remove typing indicator
+      _chatMessages.removeLast();
+      // Add actual response
       _chatMessages.add({'sender': 'ai', 'message': response});
     });
   }
@@ -148,6 +157,15 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
         title: const Text('AI Habit Coach'),
         elevation: 0,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bug_report),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const DebugScreen()),
+              );
+            },
+          ),
           IconButton(
             icon: Icon(_showChat ? Icons.lightbulb : Icons.chat),
             onPressed: () {
@@ -513,117 +531,151 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   }
 
   Widget _buildChatInterface() {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.purple[400]!, Colors.blue[400]!],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+    return SafeArea(
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.purple[400]!, Colors.blue[400]!],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: const Row(
+              children: [
+                Text('🤖', style: TextStyle(fontSize: 32)),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'AI Habit Coach',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Ask me anything about building better habits!',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
-          child: const Row(
-            children: [
-              Text('🤖', style: TextStyle(fontSize: 32)),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'AI Habit Coach',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+          Expanded(
+            child: _chatMessages.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🤖', style: TextStyle(fontSize: 64)),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Hi! I\'m your AI Habit Coach',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Ask me about habit building, motivation,\nor anything related to personal growth!',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    itemCount: _chatMessages.length,
+                    itemBuilder: (context, index) {
+                      final message = _chatMessages[index];
+                      final isUser = message['sender'] == 'user';
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          constraints: BoxConstraints(
+                            maxWidth: MediaQuery.of(context).size.width * 0.75,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isUser ? Colors.blue : Colors.grey[200],
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Text(
+                            message['message']!,
+                            style: TextStyle(
+                              color: isUser ? Colors.white : Colors.black87,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+          Container(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).viewInsets.bottom + 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, -2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    maxLines: null,
+                    textCapitalization: TextCapitalization.sentences,
+                    decoration: InputDecoration(
+                      hintText: 'Ask about habits...',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
                     ),
-                    Text(
-                      'Ask me anything about building better habits!',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        Expanded(
-          child: ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: _chatMessages.length,
-            itemBuilder: (context, index) {
-              final message = _chatMessages[index];
-              final isUser = message['sender'] == 'user';
-              return Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  constraints: const BoxConstraints(maxWidth: 280),
-                  decoration: BoxDecoration(
-                    color: isUser ? Colors.blue : Colors.grey[200],
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Text(
-                    message['message']!,
-                    style: TextStyle(
-                      color: isUser ? Colors.white : Colors.black87,
-                    ),
+                    onSubmitted: (_) => _sendChatMessage(),
                   ),
                 ),
-              );
-            },
-          ),
-        ),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, -2),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: TextField(
-                  controller: _chatController,
-                  decoration: InputDecoration(
-                    hintText: 'Ask about habits...',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: _sendChatMessage,
+                  icon: const Icon(Icons.send),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.all(12),
                   ),
-                  onSubmitted: (_) => _sendChatMessage(),
                 ),
-              ),
-              const SizedBox(width: 8),
-              IconButton(
-                onPressed: _sendChatMessage,
-                icon: const Icon(Icons.send),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

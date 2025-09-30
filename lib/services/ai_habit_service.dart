@@ -92,28 +92,28 @@ class AIHabitService {
     final prompt = _buildPrompt(existingHabits, userGoal, lifestyle, availableTime);
     
     final response = await http.post(
-      Uri.parse(APIConfig.openAIBaseUrl),
-      headers: APIConfig.openAIHeaders,
+      Uri.parse('${APIConfig.geminiBaseUrl}?key=${APIConfig.geminiApiKey}'),
+      headers: APIConfig.geminiHeaders,
       body: jsonEncode({
-        'model': APIConfig.openAIModel,
-        'messages': [
+        'contents': [
           {
-            'role': 'system',
-            'content': 'You are a helpful habit coach that provides personalized habit suggestions in JSON format.'
-          },
-          {
-            'role': 'user',
-            'content': prompt,
+            'parts': [
+              {
+                'text': 'You are a helpful habit coach that provides personalized habit suggestions in JSON format.\n\n$prompt'
+              }
+            ]
           }
         ],
-        'max_tokens': 1000,
-        'temperature': 0.7,
+        'generationConfig': {
+          'temperature': 0.7,
+          'maxOutputTokens': 1000,
+        }
       }),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['choices'][0]['message']['content'];
+      return data['candidates'][0]['content']['parts'][0]['text'];
     }
     
     return null;
@@ -195,6 +195,8 @@ Focus on habits that complement existing ones and are achievable given the time 
 
   static Future<String?> _getAIAdvice(String habitName, int currentStreak, int totalCompletions) async {
     final prompt = '''
+You are an encouraging habit coach who provides brief, actionable advice.
+
 Provide encouraging and actionable advice for someone working on this habit:
 
 Habit: $habitName
@@ -205,28 +207,28 @@ Give 2-3 sentences of personalized motivation and practical tips. Be encouraging
 ''';
 
     final response = await http.post(
-      Uri.parse(APIConfig.openAIBaseUrl),
-      headers: APIConfig.openAIHeaders,
+      Uri.parse('${APIConfig.geminiBaseUrl}?key=${APIConfig.geminiApiKey}'),
+      headers: APIConfig.geminiHeaders,
       body: jsonEncode({
-        'model': APIConfig.openAIModel,
-        'messages': [
+        'contents': [
           {
-            'role': 'system',
-            'content': 'You are an encouraging habit coach who provides brief, actionable advice.'
-          },
-          {
-            'role': 'user',
-            'content': prompt,
+            'parts': [
+              {
+                'text': prompt
+              }
+            ]
           }
         ],
-        'max_tokens': 150,
-        'temperature': 0.8,
+        'generationConfig': {
+          'temperature': 0.8,
+          'maxOutputTokens': 150,
+        }
       }),
     );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['choices'][0]['message']['content'].trim();
+      return data['candidates'][0]['content']['parts'][0]['text'].trim();
     }
     
     return null;
@@ -282,32 +284,55 @@ Give 2-3 sentences of personalized motivation and practical tips. Be encouraging
   }
 
   static Future<String?> _chatAPI(String message, String context) async {
-    final response = await http.post(
-      Uri.parse(APIConfig.openAIBaseUrl),
-      headers: APIConfig.openAIHeaders,
-      body: jsonEncode({
-        'model': APIConfig.openAIModel,
-        'messages': [
-          {
-            'role': 'system',
-            'content': 'You are a friendly and knowledgeable habit coach. Help users build better habits with encouragement and practical advice. Keep responses concise and actionable. Context: $context'
-          },
-          {
-            'role': 'user',
-            'content': message,
-          }
-        ],
-        'max_tokens': 200,
-        'temperature': 0.7,
-      }),
-    );
+    try {
+      print('🤖 Making Gemini AI API call...');
+      print('📍 API URL: ${APIConfig.geminiBaseUrl}');
+      print('🔑 API Key configured: ${APIConfig.isConfigured}');
+      print('💬 Message: $message');
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['choices'][0]['message']['content'].trim();
+      final prompt = '''You are a friendly and knowledgeable habit coach. Help users build better habits with encouragement and practical advice. Keep responses concise and actionable.
+
+Context: $context
+
+User Question: $message
+
+Please provide a helpful, encouraging response:''';
+
+      final response = await http.post(
+        Uri.parse('${APIConfig.geminiBaseUrl}?key=${APIConfig.geminiApiKey}'),
+        headers: APIConfig.geminiHeaders,
+        body: jsonEncode({
+          'contents': [
+            {
+              'parts': [
+                {
+                  'text': prompt
+                }
+              ]
+            }
+          ],
+          'generationConfig': {
+            'temperature': 0.7,
+            'maxOutputTokens': 200,
+          }
+        }),
+      ).timeout(Duration(seconds: APIConfig.aiTimeoutSeconds));
+
+      print('📡 Response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final aiResponse = data['candidates'][0]['content']['parts'][0]['text'].trim();
+        print('✅ Gemini AI Response received successfully');
+        return aiResponse;
+      } else {
+        print('❌ Gemini API Error: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('💥 Exception in _chatAPI: $e');
+      return null;
     }
-    
-    return null;
   }
 
   static String _getFallbackChatResponse(String message) {
