@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/user_stats.dart';
-import '../models/badge.dart';
+import '../models/badge.dart' as HabitBadgeModel;
 
 class AchievementsScreen extends StatefulWidget {
   final UserStats userStats;
@@ -72,7 +72,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
 
   Widget _buildBadgesTab() {
     final earnedBadges = widget.userStats.earnedBadges;
-    final allBadgeTypes = BadgeType.values;
+    final allBadgeTypes = HabitBadgeModel.BadgeType.values;
     final unlockedBadgeTypes = earnedBadges.map((b) => b.type).toSet();
 
     return SlideTransition(
@@ -207,7 +207,7 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     );
   }
 
-  Widget _buildEarnedBadgeCard(Badge badge) {
+  Widget _buildEarnedBadgeCard(HabitBadgeModel.HabitBadge badge) {
     return Card(
       elevation: 6,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -270,8 +270,8 @@ class _AchievementsScreenState extends State<AchievementsScreen>
     );
   }
 
-  Widget _buildLockedBadgeCard(BadgeType badgeType) {
-    final template = Badge.getBadgeTemplate(badgeType);
+  Widget _buildLockedBadgeCard(HabitBadgeModel.BadgeType badgeType) {
+    final template = HabitBadgeModel.HabitBadge.getBadgeTemplate(badgeType);
     
     return Card(
       elevation: 2,

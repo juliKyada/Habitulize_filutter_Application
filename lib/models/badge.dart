@@ -11,7 +11,7 @@ enum BadgeType {
   weekend,
 }
 
-class Badge {
+class HabitBadge {
   final String id;
   final BadgeType type;
   final String name;
@@ -20,7 +20,7 @@ class Badge {
   final DateTime earnedDate;
   final int value; // For sorting/ranking badges
 
-  Badge({
+  HabitBadge({
     required this.id,
     required this.type,
     required this.name,
@@ -40,8 +40,8 @@ class Badge {
         'value': value,
       };
 
-  factory Badge.fromJson(Map<String, dynamic> json) {
-    return Badge(
+  factory HabitBadge.fromJson(Map<String, dynamic> json) {
+    return HabitBadge(
       id: json['id'],
       type: BadgeType.values.firstWhere(
         (e) => e.toString() == json['type'],
@@ -55,10 +55,10 @@ class Badge {
     );
   }
 
-  static Badge getBadgeTemplate(BadgeType type) {
+  static HabitBadge getBadgeTemplate(BadgeType type) {
     switch (type) {
       case BadgeType.firstStep:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'First Step',
@@ -68,7 +68,7 @@ class Badge {
           value: 1,
         );
       case BadgeType.weekWarrior:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Week Warrior',
@@ -78,7 +78,7 @@ class Badge {
           value: 2,
         );
       case BadgeType.monthMaster:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Month Master',
@@ -88,7 +88,7 @@ class Badge {
           value: 3,
         );
       case BadgeType.streakLegend:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Streak Legend',
@@ -98,7 +98,7 @@ class Badge {
           value: 5,
         );
       case BadgeType.habitCollector:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Habit Collector',
@@ -108,7 +108,7 @@ class Badge {
           value: 2,
         );
       case BadgeType.perfectWeek:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Perfect Week',
@@ -118,7 +118,7 @@ class Badge {
           value: 3,
         );
       case BadgeType.consistency:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Consistency King',
@@ -128,7 +128,7 @@ class Badge {
           value: 4,
         );
       case BadgeType.earlyBird:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Early Bird',
@@ -138,7 +138,7 @@ class Badge {
           value: 2,
         );
       case BadgeType.nightOwl:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Night Owl',
@@ -148,7 +148,7 @@ class Badge {
           value: 2,
         );
       case BadgeType.weekend:
-        return Badge(
+        return HabitBadge(
           id: '',
           type: type,
           name: 'Weekend Warrior',

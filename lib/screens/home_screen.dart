@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/habit.dart';
-import '../models/badge.dart';
+import '../models/badge.dart' as HabitBadgeModel;
 import '../models/user_stats.dart';
 import '../services/habit_service.dart';
 import 'add_habit_screen.dart';
@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
 
-  void _showBadgeCelebration(List<Badge> badges) {
+  void _showBadgeCelebration(List<HabitBadgeModel.HabitBadge> badges) {
     _badgeController.reset();
     _badgeController.forward();
     
@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         title: const Text('🎉 New Achievement!'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: badges.map((badge) => ListTile(
+          children: badges.map<Widget>((badge) => ListTile(
             leading: Text(badge.iconEmoji, style: const TextStyle(fontSize: 32)),
             title: Text(badge.name),
             subtitle: Text(badge.description),

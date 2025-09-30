@@ -60,7 +60,7 @@ class HabitService {
   }
 
   // Complete a habit with gamification
-  Future<List<Badge>> completeHabit(String habitId) async {
+  Future<List<HabitBadge>> completeHabit(String habitId) async {
     final habits = await getHabits();
     final habitIndex = habits.indexWhere((h) => h.id == habitId);
     
@@ -134,10 +134,10 @@ class HabitService {
     await prefs.setString(_userStatsKey, jsonEncode(updatedStats.toJson()));
   }
 
-  Future<List<Badge>> _checkAndAwardBadges() async {
+  Future<List<HabitBadge>> _checkAndAwardBadges() async {
     final habits = await getHabits();
     final stats = await getUserStats();
-    final newBadges = <Badge>[];
+    final newBadges = <HabitBadge>[];
     
     // Check various badge conditions
     final earnedBadgeTypes = stats.earnedBadges.map((b) => b.type).toSet();
@@ -185,9 +185,9 @@ class HabitService {
     return newBadges;
   }
   
-  Badge _createBadge(BadgeType type) {
-    final template = Badge.getBadgeTemplate(type);
-    return Badge(
+  HabitBadge _createBadge(BadgeType type) {
+    final template = HabitBadge.getBadgeTemplate(type);
+    return HabitBadge(
       id: _uuid.v4(),
       type: template.type,
       name: template.name,
@@ -198,7 +198,7 @@ class HabitService {
     );
   }
   
-  Future<void> _saveBadges(List<Badge> newBadges) async {
+  Future<void> _saveBadges(List<HabitBadge> newBadges) async {
     final stats = await getUserStats();
     final updatedBadges = [...stats.earnedBadges, ...newBadges];
     final updatedStats = stats.copyWith(earnedBadges: updatedBadges);

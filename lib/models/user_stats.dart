@@ -4,7 +4,7 @@ class UserStats {
   final int totalHabitsCompleted;
   final int currentLongestStreak;
   final int totalDaysActive;
-  final List<Badge> earnedBadges;
+  final List<HabitBadge> earnedBadges;
   final int level;
   final int experience;
   final DateTime? lastActiveDate;
@@ -50,7 +50,7 @@ class UserStats {
       currentLongestStreak: json['currentLongestStreak'] ?? 0,
       totalDaysActive: json['totalDaysActive'] ?? 0,
       earnedBadges: (json['earnedBadges'] as List<dynamic>?)
-              ?.map((badgeJson) => Badge.fromJson(badgeJson))
+              ?.map((badgeJson) => HabitBadge.fromJson(badgeJson))
               .toList() ??
           [],
       level: json['level'] ?? 1,
@@ -66,7 +66,7 @@ class UserStats {
     int? totalHabitsCompleted,
     int? currentLongestStreak,
     int? totalDaysActive,
-    List<Badge>? earnedBadges,
+    List<HabitBadge>? earnedBadges,
     int? level,
     int? experience,
     DateTime? lastActiveDate,
