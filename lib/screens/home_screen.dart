@@ -4,7 +4,6 @@ import '../models/badge.dart' as HabitBadgeModel;
 import '../models/user_stats.dart';
 import '../services/habit_service.dart';
 import 'add_habit_screen.dart';
-import 'analyzer_screen.dart';
 import 'suggestions_screen.dart';
 import 'achievements_screen.dart';
 
@@ -158,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.psychology_outlined),
+            icon: const Icon(Icons.smart_toy),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -169,16 +168,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.analytics_outlined),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => AnalyzerScreen(habits: _habits),
-                ),
-              );
-            },
-          ),
+
         ],
       ),
       body: _isLoading

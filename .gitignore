@@ -43,3 +43,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# API Keys and Sensitive Configuration
+lib/config/api_config.dart
+*.env
+.env
+.env.local
+.env.production
+.env.development
+
+# Additional sensitive files
+android/app/google-services.json
+android/app/src/main/res/values/google_maps_api.xml
+ios/Runner/GoogleService-Info.plist
+ios/Flutter/flutter_export_environment.sh
