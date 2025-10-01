@@ -302,26 +302,37 @@ Give 2-3 sentences of personalized motivation and practical tips. Be encouraging
 
   // Chat with AI about habits
   static Future<String> chatWithAI(String message, String context) async {
+    print('🚀 Starting chatWithAI...');
+    print('🔧 API configured: ${APIConfig.isConfigured}');
+    print('🔧 AI enabled: ${APIConfig.enableAIFeatures}');
+    
     try {
       if (APIConfig.isConfigured && APIConfig.enableAIFeatures) {
+        print('🌐 Attempting API call...');
         final response = await _chatAPI(message, context);
-        if (response != null) return response;
+        if (response != null && response.isNotEmpty) {
+          print('✅ Got AI response: ${response.substring(0, response.length > 50 ? 50 : response.length)}...');
+          return response;
+        } else {
+          print('⚠️ API returned null or empty response');
+        }
+      } else {
+        print('⚠️ API not configured or disabled');
       }
     } catch (e) {
-      print('AI Chat Error: $e');
+      print('❌ AI Chat Error: $e');
     }
     
+    print('🔄 Using fallback response');
     return _getFallbackChatResponse(message);
   }
 
   static Future<String?> _chatAPI(String message, String context) async {
-    try {
-      print('🤖 Making Gemini AI API call...');
-      print('📍 API URL: ${APIConfig.geminiBaseUrl}');
-      print('🔑 API Key configured: ${APIConfig.isConfigured}');
-      print('💬 Message: $message');
+    print('🤖 Making Gemini AI API call...');
+    print(' API Key configured: ${APIConfig.isConfigured}');
+    print('💬 Message: $message');
 
-      final prompt = '''You are a friendly and knowledgeable habit coach. Help users build better habits with encouragement and practical advice. Keep responses concise and actionable.
+    final prompt = '''You are a friendly and knowledgeable habit coach. Help users build better habits with encouragement and practical advice. Keep responses concise and actionable.
 
 Context: $context
 
@@ -329,6 +340,10 @@ User Question: $message
 
 Please provide a helpful, encouraging response:''';
 
+    // Try main endpoint first
+    try {
+      print('📍 Trying main API URL: ${APIConfig.geminiBaseUrl}');
+      
       final response = await http.post(
         Uri.parse('${APIConfig.geminiBaseUrl}?key=${APIConfig.geminiApiKey}'),
         headers: APIConfig.geminiHeaders,
@@ -357,28 +372,103 @@ Please provide a helpful, encouraging response:''';
         print('✅ Gemini AI Response received successfully');
         return aiResponse;
       } else {
-        print('❌ Gemini API Error: ${response.statusCode} - ${response.body}');
-        return null;
+        print('❌ Main endpoint failed: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      print('💥 Exception in _chatAPI: $e');
-      return null;
+      print('💥 Main endpoint exception: $e');
     }
+
+    // Try alternative endpoints
+    for (int i = 0; i < APIConfig.alternativeEndpoints.length; i++) {
+      try {
+        final endpoint = APIConfig.alternativeEndpoints[i];
+        print('🔄 Trying alternative endpoint ${i + 1}: $endpoint');
+        
+        final response = await http.post(
+          Uri.parse('$endpoint?key=${APIConfig.geminiApiKey}'),
+          headers: APIConfig.geminiHeaders,
+          body: jsonEncode({
+            'contents': [
+              {
+                'parts': [
+                  {
+                    'text': prompt
+                  }
+                ]
+              }
+            ],
+            'generationConfig': {
+              'temperature': 0.7,
+              'maxOutputTokens': 200,
+            }
+          }),
+        ).timeout(Duration(seconds: APIConfig.aiTimeoutSeconds));
+
+        print('📡 Alternative ${i + 1} status: ${response.statusCode}');
+        
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final aiResponse = data['candidates'][0]['content']['parts'][0]['text'].trim();
+          print('✅ Alternative endpoint ${i + 1} worked!');
+          return aiResponse;
+        } else {
+          print('❌ Alternative ${i + 1} failed: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('💥 Alternative ${i + 1} exception: $e');
+      }
+    }
+
+    print('🚫 All API endpoints failed');
+    return null;
   }
 
   static String _getFallbackChatResponse(String message) {
     final messageLower = message.toLowerCase();
     
     if (messageLower.contains('motivat') || messageLower.contains('encourage')) {
-      return "You've got this! 💪 Every small step you take is building towards your bigger goals. I believe in your ability to create positive change!";
+      final responses = [
+        "You've got this! 💪 Every small step you take is building towards your bigger goals. I believe in your ability to create positive change!",
+        "Your dedication to improving yourself is inspiring! 🌟 Remember, every expert was once a beginner. Keep moving forward!",
+        "Progress isn't always visible, but it's always happening! 🚀 Trust the process and celebrate every small victory along the way.",
+      ];
+      return responses[DateTime.now().millisecond % responses.length];
     } else if (messageLower.contains('streak') || messageLower.contains('consistent')) {
-      return "Consistency is the key to success! 🔑 Focus on showing up every day, even if it's just for a few minutes. Small daily actions create big results over time.";
+      final responses = [
+        "Consistency is the key to success! 🔑 Focus on showing up every day, even if it's just for a few minutes. Small daily actions create big results over time.",
+        "Streaks are built one day at a time! 📅 Don't aim for perfection - aim for progress. Missing one day doesn't break your momentum, giving up does!",
+        "The magic happens in the repetition! 🎯 Each day you show up, you're rewiring your brain and building your future self.",
+      ];
+      return responses[DateTime.now().millisecond % responses.length];
     } else if (messageLower.contains('difficult') || messageLower.contains('hard')) {
-      return "I understand it can be challenging! 🤗 Try starting smaller or linking your habit to something you already do. What matters most is progress, not perfection.";
+      final responses = [
+        "I understand it can be challenging! 🤗 Try starting smaller or linking your habit to something you already do. What matters most is progress, not perfection.",
+        "Difficult times build strong habits! 💎 Consider lowering the bar - can you do 50% of your habit? Even 10%? Something is always better than nothing.",
+        "Challenges are opportunities in disguise! 🎭 What if you rewarded yourself for attempting, not just completing? Progress deserves celebration!",
+      ];
+      return responses[DateTime.now().millisecond % responses.length];
     } else if (messageLower.contains('time') || messageLower.contains('busy')) {
-      return "Time is precious, I get it! ⏰ Try the 2-minute rule - start with just 2 minutes of your habit. Often, starting is the hardest part!";
+      final responses = [
+        "Time is precious, I get it! ⏰ Try the 2-minute rule - start with just 2 minutes of your habit. Often, starting is the hardest part!",
+        "Busy schedules need smart habits! 🧠 Can you stack this habit with something you already do? Like meditation while coffee brews?",
+        "Even superheroes have time limits! 🦸‍♀️ Focus on micro-habits - they're small but mighty, and they fit into any schedule!",
+      ];
+      return responses[DateTime.now().millisecond % responses.length];
+    } else if (messageLower.contains('help') || messageLower.contains('advice') || messageLower.contains('tip')) {
+      final responses = [
+        "Here's a pro tip: Stack your new habit after an existing one! 🔗 Like 'After I brush my teeth, I'll do 5 pushups.' Your brain loves patterns!",
+        "Try the 1% rule! 📈 Improve just 1% each day. It seems small, but after a year, you'll be 37 times better! Math is magical! ✨",
+        "Environment shapes behavior! 🏠 Make good habits obvious (put your workout clothes out) and bad habits invisible (hide the snacks)!",
+      ];
+      return responses[DateTime.now().millisecond % responses.length];
     } else {
-      return "Thanks for sharing! 😊 Remember, building habits is a journey. Be patient with yourself and celebrate every small win along the way!";
+      final responses = [
+        "Thanks for sharing! 😊 Remember, building habits is a journey. Be patient with yourself and celebrate every small win along the way!",
+        "Great question! 🤔 The fact that you're thinking about habits means you're already on the right path. Keep that curiosity alive!",
+        "I love your commitment to growth! 🌱 Every conversation about habits is a step toward becoming your best self. What's your next move?",
+        "Your future self is cheering you on right now! 📣 They know that the small choices you make today are creating their amazing life tomorrow!",
+      ];
+      return responses[DateTime.now().millisecond % responses.length];
     }
   }
 }

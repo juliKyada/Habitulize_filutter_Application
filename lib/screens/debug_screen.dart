@@ -16,7 +16,7 @@ class _DebugScreenState extends State<DebugScreen> {
   Future<void> _testAIConnection() async {
     setState(() {
       _isLoading = true;
-      _testResult = 'Testing AI connection...';
+      _testResult = 'Testing AI chat connection...';
     });
 
     try {
@@ -27,12 +27,38 @@ class _DebugScreenState extends State<DebugScreen> {
 
       setState(() {
         _isLoading = false;
-        _testResult = 'Success! AI responded: "$response"';
+        _testResult = 'Chat Test Result: "$response"';
       });
     } catch (e) {
       setState(() {
         _isLoading = false;
-        _testResult = 'Error: $e';
+        _testResult = 'Chat Test Error: $e';
+      });
+    }
+  }
+
+  Future<void> _testHabitSuggestions() async {
+    setState(() {
+      _isLoading = true;
+      _testResult = 'Testing AI habit suggestions...';
+    });
+
+    try {
+      final suggestions = await AIHabitService.getPersonalizedSuggestions(
+        existingHabits: ['Morning walk'],
+        userGoal: 'Better health',
+        lifestyle: 'Sedentary',
+        availableTime: 30,
+      );
+
+      setState(() {
+        _isLoading = false;
+        _testResult = 'Suggestions Test Result: Got ${suggestions.length} suggestions:\n${suggestions.take(2).map((s) => '• ${s['title']}').join('\n')}';
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _testResult = 'Suggestions Test Error: $e';
       });
     }
   }
@@ -67,18 +93,32 @@ class _DebugScreenState extends State<DebugScreen> {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _testAIConnection,
-              child: _isLoading 
-                ? const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
-                      SizedBox(width: 8),
-                      Text('Testing...'),
-                    ],
-                  )
-                : const Text('Test AI Connection'),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _testAIConnection,
+                    child: _isLoading 
+                      ? const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                            SizedBox(width: 8),
+                            Text('Testing...'),
+                          ],
+                        )
+                      : const Text('Test AI Chat'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _testHabitSuggestions,
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+                    child: const Text('Test Suggestions'),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             Container(
