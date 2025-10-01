@@ -154,6 +154,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[50],
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('AI Habit Coach'),
         elevation: 0,
@@ -195,102 +196,111 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   }
 
   Widget _buildLifestyleStep() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.psychology, size: 64, color: Colors.blue),
-          const SizedBox(height: 24),
-          const Text(
-            'How would you describe your current lifestyle?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'This helps me suggest habits that fit your daily routine.',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 32),
-          ..._buildChoiceButtons([
-            {'title': 'Sedentary', 'subtitle': 'Mostly sitting, limited physical activity', 'icon': '🪑'},
-            {'title': 'Moderately Active', 'subtitle': 'Some exercise, balanced routine', 'icon': '🚶'},
-            {'title': 'Very Active', 'subtitle': 'Regular exercise, active lifestyle', 'icon': '🏃'},
-          ], _lifestyle, (value) {
-            setState(() {
-              _lifestyle = value;
-            });
-            _nextStep();
-          }),
-        ],
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.psychology, size: 64, color: Colors.blue),
+            const SizedBox(height: 24),
+            const Text(
+              'How would you describe your current lifestyle?',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'This helps me suggest habits that fit your daily routine.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 32),
+            ..._buildChoiceButtons([
+              {'title': 'Sedentary', 'subtitle': 'Mostly sitting, limited physical activity', 'icon': '🪑'},
+              {'title': 'Moderately Active', 'subtitle': 'Some exercise, balanced routine', 'icon': '🚶'},
+              {'title': 'Very Active', 'subtitle': 'Regular exercise, active lifestyle', 'icon': '🏃'},
+            ], _lifestyle, (value) {
+              setState(() {
+                _lifestyle = value;
+              });
+              _nextStep();
+            }),
+            const SizedBox(height: 50), // Extra bottom padding
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildGoalStep() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.flag, size: 64, color: Colors.orange),
-          const SizedBox(height: 24),
-          const Text(
-            'What\'s your primary goal?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'I\'ll tailor suggestions to help you achieve what matters most.',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 32),
-          ..._buildChoiceButtons([
-            {'title': 'Better Health', 'subtitle': 'Physical wellness and energy', 'icon': '💪'},
-            {'title': 'Mental Wellbeing', 'subtitle': 'Stress reduction and mindfulness', 'icon': '🧘'},
-            {'title': 'Personal Growth', 'subtitle': 'Learning and skill development', 'icon': '🌱'},
-            {'title': 'Work Performance', 'subtitle': 'Productivity and focus', 'icon': '🎯'},
-          ], _goal, (value) {
-            setState(() {
-              _goal = value;
-            });
-            _nextStep();
-          }),
-        ],
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.flag, size: 64, color: Colors.orange),
+            const SizedBox(height: 24),
+            const Text(
+              'What\'s your primary goal?',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'I\'ll tailor suggestions to help you achieve what matters most.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 32),
+            ..._buildChoiceButtons([
+              {'title': 'Better Health', 'subtitle': 'Physical wellness and energy', 'icon': '💪'},
+              {'title': 'Mental Wellbeing', 'subtitle': 'Stress reduction and mindfulness', 'icon': '🧘'},
+              {'title': 'Personal Growth', 'subtitle': 'Learning and skill development', 'icon': '🌱'},
+              {'title': 'Work Performance', 'subtitle': 'Productivity and focus', 'icon': '🎯'},
+            ], _goal, (value) {
+              setState(() {
+                _goal = value;
+              });
+              _nextStep();
+            }),
+            const SizedBox(height: 50), // Extra bottom padding
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildTimeStep() {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.schedule, size: 64, color: Colors.purple),
-          const SizedBox(height: 24),
-          const Text(
-            'How much time can you dedicate daily?',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'I\'ll suggest habits that fit your available time.',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-          const SizedBox(height: 32),
-          ..._buildChoiceButtons([
-            {'title': '10-15 minutes', 'subtitle': 'Quick daily habits', 'icon': '⏱️'},
-            {'title': '20-30 minutes', 'subtitle': 'Moderate commitment', 'icon': '⏰'},
-            {'title': '45+ minutes', 'subtitle': 'Deep practice sessions', 'icon': '🕐'},
-          ], _availableTime.toString(), (value) {
-            setState(() {
-              _availableTime = value == '10-15 minutes' ? 15 : 
-                            value == '20-30 minutes' ? 30 : 45;
-            });
-            _nextStep();
-          }),
-        ],
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Icon(Icons.schedule, size: 64, color: Colors.purple),
+            const SizedBox(height: 24),
+            const Text(
+              'How much time can you dedicate daily?',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'I\'ll suggest habits that fit your available time.',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+            const SizedBox(height: 32),
+            ..._buildChoiceButtons([
+              {'title': '10-15 minutes', 'subtitle': 'Quick daily habits', 'icon': '⏱️'},
+              {'title': '20-30 minutes', 'subtitle': 'Moderate commitment', 'icon': '⏰'},
+              {'title': '45+ minutes', 'subtitle': 'Deep practice sessions', 'icon': '🕐'},
+            ], _availableTime.toString(), (value) {
+              setState(() {
+                _availableTime = value == '10-15 minutes' ? 15 : 
+                              value == '20-30 minutes' ? 30 : 45;
+              });
+              _nextStep();
+            }),
+            const SizedBox(height: 50), // Extra bottom padding
+          ],
+        ),
       ),
     );
   }
@@ -311,12 +321,11 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
       );
     }
 
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    return SafeArea(
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
+            margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -355,9 +364,9 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
               ],
             ),
           ),
-          const SizedBox(height: 20),
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: _aiSuggestions.length,
               itemBuilder: (context, index) {
                 final suggestion = _aiSuggestions[index];
