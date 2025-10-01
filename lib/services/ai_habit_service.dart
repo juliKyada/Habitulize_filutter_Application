@@ -66,20 +66,36 @@ class AIHabitService {
     int availableTime = 30,
   }) async {
     try {
+      print('🚀 Starting getPersonalizedSuggestions...');
+      print('🔧 API configured: ${APIConfig.isConfigured}');
+      print('🔧 AI enabled: ${APIConfig.enableAIFeatures}');
+      print('🔧 API key starts with AIza: ${APIConfig.geminiApiKey.startsWith('AIza')}');
+      
       if (!APIConfig.isConfigured || !APIConfig.enableAIFeatures) {
-        // Return enhanced fallback suggestions when API is not configured
+        print('⚠️ API not configured or disabled, using fallback suggestions');
         return _getEnhancedFallbackSuggestions(existingHabits);
       }
 
+      print('🌐 Making API call...');
       final response = await _callAIAPI(existingHabits, userGoal, lifestyle, availableTime);
       if (response != null) {
-        return _parseAIResponse(response);
+        print('✅ Got API response, parsing...');
+        final parsed = _parseAIResponse(response);
+        if (parsed.isNotEmpty) {
+          print('✅ Successfully parsed ${parsed.length} suggestions from API');
+          return parsed;
+        } else {
+          print('⚠️ Failed to parse API response, using fallback');
+        }
+      } else {
+        print('❌ API call returned null, using fallback');
       }
     } catch (e) {
-      print('AI API Error: $e');
+      print('❌ Exception in getPersonalizedSuggestions: $e');
     }
     
     // Fallback to smart suggestions
+    print('🔄 Using fallback suggestions');
     return _getEnhancedFallbackSuggestions(existingHabits);
   }
 
@@ -89,34 +105,49 @@ class AIHabitService {
     String lifestyle,
     int availableTime,
   ) async {
-    final prompt = _buildPrompt(existingHabits, userGoal, lifestyle, availableTime);
-    
-    final response = await http.post(
-      Uri.parse('${APIConfig.geminiBaseUrl}?key=${APIConfig.geminiApiKey}'),
-      headers: APIConfig.geminiHeaders,
-      body: jsonEncode({
-        'contents': [
-          {
-            'parts': [
-              {
-                'text': 'You are a helpful habit coach that provides personalized habit suggestions in JSON format.\n\n$prompt'
-              }
-            ]
+    try {
+      final prompt = _buildPrompt(existingHabits, userGoal, lifestyle, availableTime);
+      print('📝 Prompt built: ${prompt.substring(0, 100)}...');
+      
+      final url = '${APIConfig.geminiBaseUrl}?key=${APIConfig.geminiApiKey}';
+      print('🌐 Making request to: ${url.substring(0, 100)}...');
+      
+      final response = await http.post(
+        Uri.parse(url),
+        headers: APIConfig.geminiHeaders,
+        body: jsonEncode({
+          'contents': [
+            {
+              'parts': [
+                {
+                  'text': 'You are a helpful habit coach that provides personalized habit suggestions in JSON format.\n\n$prompt'
+                }
+              ]
+            }
+          ],
+          'generationConfig': {
+            'temperature': 0.7,
+            'maxOutputTokens': 1000,
           }
-        ],
-        'generationConfig': {
-          'temperature': 0.7,
-          'maxOutputTokens': 1000,
-        }
-      }),
-    );
+        }),
+      ).timeout(Duration(seconds: APIConfig.aiTimeoutSeconds));
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      return data['candidates'][0]['content']['parts'][0]['text'];
+      print('📡 Response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ Response received successfully');
+        final content = data['candidates'][0]['content']['parts'][0]['text'];
+        print('📄 Content length: ${content.length} characters');
+        return content;
+      } else {
+        print('❌ HTTP Error ${response.statusCode}: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('💥 Exception in _callAIAPI: $e');
+      return null;
     }
-    
-    return null;
   }
 
   static String _buildPrompt(

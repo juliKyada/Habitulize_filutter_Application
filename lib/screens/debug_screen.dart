@@ -56,9 +56,11 @@ class _DebugScreenState extends State<DebugScreen> {
             _buildInfoCard('API Key Configured', APIConfig.isConfigured ? '✅ Yes' : '❌ No'),
             _buildInfoCard('API Key Format', APIConfig.geminiApiKey.startsWith('AIza') ? '✅ Correct (Gemini)' : '❌ Wrong format'),
             _buildInfoCard('API Key Length', '${APIConfig.geminiApiKey.length} characters'),
+            _buildInfoCard('API Key Preview', '${APIConfig.geminiApiKey.substring(0, 12)}...'),
             _buildInfoCard('AI Features Enabled', APIConfig.enableAIFeatures ? '✅ Yes' : '❌ No'),
-            _buildInfoCard('API Base URL', APIConfig.geminiBaseUrl),
+            _buildInfoCard('API Base URL', APIConfig.geminiBaseUrl.substring(0, 50) + '...'),
             _buildInfoCard('AI Model', APIConfig.geminiModel),
+            _buildInfoCard('Timeout', '${APIConfig.aiTimeoutSeconds}s'),
             const SizedBox(height: 24),
             const Text(
               'Connection Test',

@@ -531,8 +531,8 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   }
 
   Widget _buildChatInterface() {
-    return SafeArea(
-      child: Column(
+    return Scaffold(
+      body: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
@@ -543,33 +543,36 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: const Row(
-              children: [
-                Text('🤖', style: TextStyle(fontSize: 32)),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'AI Habit Coach',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+            child: SafeArea(
+              bottom: false,
+              child: const Row(
+                children: [
+                  Text('🤖', style: TextStyle(fontSize: 32)),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'AI Habit Coach',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      Text(
-                        'Ask me anything about building better habits!',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
+                        Text(
+                          'Ask me anything about building better habits!',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           Expanded(
@@ -600,7 +603,7 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                    padding: const EdgeInsets.all(16),
                     itemCount: _chatMessages.length,
                     itemBuilder: (context, index) {
                       final message = _chatMessages[index];
@@ -629,52 +632,54 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                     },
                   ),
           ),
-          Container(
-            padding: EdgeInsets.fromLTRB(16, 8, 16, MediaQuery.of(context).viewInsets.bottom + 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, -2),
-                ),
-              ],
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _chatController,
-                    maxLines: null,
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      hintText: 'Ask about habits...',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    onSubmitted: (_) => _sendChatMessage(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: _sendChatMessage,
-                  icon: const Icon(Icons.send),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.all(12),
-                  ),
-                ),
-              ],
-            ),
-          ),
         ],
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.all(8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 8,
+                offset: const Offset(0, -2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _chatController,
+                  maxLines: null,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: const InputDecoration(
+                    hintText: 'Ask about habits...',
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  onSubmitted: (_) => _sendChatMessage(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                onPressed: _sendChatMessage,
+                icon: const Icon(Icons.send),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.all(12),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
