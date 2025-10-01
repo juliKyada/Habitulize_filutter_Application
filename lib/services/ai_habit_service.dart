@@ -141,13 +141,61 @@ class AIHabitService {
         print('📄 Content length: ${content.length} characters');
         return content;
       } else {
-        print('❌ HTTP Error ${response.statusCode}: ${response.body}');
-        return null;
+        print('❌ Main endpoint failed: ${response.statusCode}: ${response.body}');
       }
     } catch (e) {
-      print('💥 Exception in _callAIAPI: $e');
-      return null;
+      print('💥 Main endpoint exception: $e');
     }
+    
+    // Try alternative endpoints for suggestions too
+    const alternativeEndpoints = [
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+      'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+    ];
+    
+    for (int i = 0; i < alternativeEndpoints.length; i++) {
+      try {
+        final endpoint = alternativeEndpoints[i];
+        final prompt = _buildPrompt(existingHabits, userGoal, lifestyle, availableTime);
+        print('🔄 Trying alternative endpoint ${i + 1} for suggestions: $endpoint');
+        
+        final response = await http.post(
+          Uri.parse('$endpoint?key=${APIConfig.geminiApiKey}'),
+          headers: APIConfig.geminiHeaders,
+          body: jsonEncode({
+            'contents': [
+              {
+                'parts': [
+                  {
+                    'text': 'You are a helpful habit coach that provides personalized habit suggestions in JSON format.\n\n$prompt'
+                  }
+                ]
+              }
+            ],
+            'generationConfig': {
+              'temperature': 0.7,
+              'maxOutputTokens': 1000,
+            }
+          }),
+        ).timeout(Duration(seconds: APIConfig.aiTimeoutSeconds));
+
+        print('📡 Alternative ${i + 1} status: ${response.statusCode}');
+        
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          final content = data['candidates'][0]['content']['parts'][0]['text'];
+          print('✅ Alternative endpoint ${i + 1} worked for suggestions!');
+          return content;
+        } else {
+          print('❌ Alternative ${i + 1} failed: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('💥 Alternative ${i + 1} exception: $e');
+      }
+    }
+
+    print('🚫 All API endpoints failed for suggestions');
+    return null;
   }
 
   static String _buildPrompt(
@@ -379,9 +427,14 @@ Please provide a helpful, encouraging response:''';
     }
 
     // Try alternative endpoints
-    for (int i = 0; i < APIConfig.alternativeEndpoints.length; i++) {
+    const alternativeEndpoints = [
+      'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+      'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+    ];
+    
+    for (int i = 0; i < alternativeEndpoints.length; i++) {
       try {
-        final endpoint = APIConfig.alternativeEndpoints[i];
+        final endpoint = alternativeEndpoints[i];
         print('🔄 Trying alternative endpoint ${i + 1}: $endpoint');
         
         final response = await http.post(
